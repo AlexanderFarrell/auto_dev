@@ -5,7 +5,6 @@ import (
 	"os"
 )
 
-
 func main() {
 	cfg, err := LoadConfig()
 	if err != nil {
@@ -18,26 +17,58 @@ func main() {
 		os.Exit(1)
 	}
 
-	target := os.Args[1]
-	if target == "help" {
+	arg1 := os.Args[1]
+	if arg1 == "help" {
 		Help(cfg)
 		os.Exit(0)
 	}
-	if len(os.Args) < 3 {
+
+	commands := AllCommands(cfg)
+	command := ""
+	targetName := ""
+
+	if isCommand(arg1, commands) {
+		command = arg1
+		if len(os.Args) >= 3 {
+			targetName = os.Args[2]
+		} else {
+			targetName = "all"
+		}
+	} else {
+		if len(os.Args) < 3 {
+			Help(cfg)
+			os.Exit(1)
+		}
+		targetName = arg1
+		command = os.Args[2]
+	}
+
+	if err := RunCommand(cfg, command, targetName); err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
 		Help(cfg)
 		os.Exit(1)
 	}
-	command := os.Args[2]
-	for key, item := range cfg {
-		if key == target {
-			for keyTarget, target
-			CallTarget(command, target, )
-			// fmt.Printf("TODO add this")
-			os.Exit(0)
+}
+
+func isCommand(value string, commands []string) bool {
+	for _, cmd := range commands {
+		if value == cmd {
+			return true
 		}
 	}
+	return false
+}
 
-	fmt.Printf("Error: Not a valid command: %s\n", target)
-	Help(cfg)
-	os.Exit(1)
+func RunCommand(cfg ConfigFile, command string, targetName string) error {
+	targets, err := ResolveTargets(cfg, targetName)
+	if err != nil {
+		return err
+	}
+	for _, name := range targets {
+		item := cfg.Targets[name]
+		if err := ExecuteCommand(command, name, item); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -1,5 +1,8 @@
 package main
 
 var Targets = map[string]Target{
-	"go": GoTarget,
+	"go":       GoTarget,
+	"vite":     ViteTarget,
+	"database": DatabaseTarget,
+	"docker":   DockerTarget,
 }

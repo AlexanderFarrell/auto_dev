@@ -1,6 +1,7 @@
 {
 	"dev": {
 		"type": "go",
-		"path": "./src"
+		"path": "./src",
+		"output": "bin/dev"
 	}
 }

@@ -2,28 +2,39 @@ package main
 
 import (
 	"fmt"
+	"sort"
 )
 
-func Help(cfg Config) {
-	var output string = "Usage: dev [help|"
-	for key, _ := range cfg {
-		output += key + "|"
+func Help(cfg ConfigFile) {
+	commands := AllCommands(cfg)
+	if len(commands) == 0 {
+		commands = []string{"build", "run"}
 	}
-	output = output[0:len(output)-1]
-	output += "]\n"
-	fmt.Printf(output)
+	fmt.Printf("Usage: dev <command> [target|group|all]\n")
+	fmt.Printf("       dev <target> <command> (legacy)\n")
+	fmt.Printf("Commands: %s\n", joinPipe(commands))
+	fmt.Printf("Targets: %s\n", joinPipe(sortedKeys(cfg.Targets)))
+	if len(cfg.Groups) > 0 {
+		fmt.Printf("Groups: %s\n", joinPipe(sortedKeys(cfg.Groups)))
+	}
 }
 
-func HelpTarget(target Target) {
-	var output string = "["
-	if target.Build != nil {
-		output += "build|"
+func joinPipe(items []string) string {
+	if len(items) == 0 {
+		return "-"
 	}
-	if target.Run != nil {
-		output += "run|"
+	out := ""
+	for _, item := range items {
+		out += item + "|"
 	}
+	return out[:len(out)-1]
+}
 
-	output = output[0:len(output)-1]
-	output += "]"
-	fmt.Printf(output)
+func sortedKeys[T any](items map[string]T) []string {
+	out := make([]string, 0, len(items))
+	for key := range items {
+		out = append(out, key)
+	}
+	sort.Strings(out)
+	return out
 }
